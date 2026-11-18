@@ -104,6 +104,8 @@ canvas{display:block;width:100%;touch-action:manipulation;-webkit-tap-highlight-
 .banner button{background:#fff;color:#8E2614;border:0;border-radius:10px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:var(--font-display)}
 .banner button:disabled{opacity:.7;cursor:default}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.quick{display:none}
+@media (max-width:860px){.quick{display:flex;gap:8px;align-items:center}.quick .who{font-family:var(--font-display);font-weight:600;font-size:.95rem;min-width:0;max-width:30%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick .btn{flex:1;padding:10px 6px;min-width:0}}
 .tool{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;cursor:pointer;font-weight:500;font-size:.92rem}
 .tool svg{width:20px;height:20px;flex:none}
 .tool:hover{border-color:var(--moss)}
@@ -287,6 +289,7 @@ canvas{display:block;width:100%;touch-action:manipulation;-webkit-tap-highlight-
           <div class="thermo" aria-live="off"><svg width="14" height="22" viewBox="0 0 14 22"><rect x="4.5" y="1" width="5" height="14" rx="2.5" fill="none" stroke="#F4F1E6" stroke-width="1.5"/><circle cx="7" cy="17" r="4" fill="#E2582C"/></svg><b id="tempTxt">24°C</b><span class="tbar"><i id="tempMark"></i></span><span id="tempWord">קר</span></div>
           <div class="banner" id="escBanner" hidden><span id="escText"></span><button id="escBtn">חפשו בבית</button></div>
         </div>
+        <div class="quick" id="quick" aria-label="טיפול מהיר בלטאה שנבחרה"><span class="who" id="qWho"></span><button class="btn" id="qCricket"></button><button class="btn" id="qLeaf"></button><button class="btn" id="qPet"></button></div>
         <div class="toolbar">
           <button class="tool" id="lampBtn"><svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 2.5-1.5 3.8-2.5 5H8.5C7.5 13.8 6 12.5 6 10z" fill="#F2B526"/><rect x="8.5" y="16" width="7" height="3" rx="1" fill="#8A8F87"/><path d="M12 1v2M3.5 4.5 5 6M20.5 4.5 19 6" stroke="#F2B526" stroke-width="1.8" stroke-linecap="round"/></svg><span id="lampTxt">מנורת חימום: כבויה</span></button>
           <label class="tool" id="autoWrap" hidden><input type="checkbox" id="autoChk" checked> תרמוסטט</label>
@@ -720,10 +723,14 @@ function feed(type){const l=lizById(selId);if(!l||l.missing)return;const r=ensur
  const f={type};if(!edible(l,f)){toast(type==='cricket'?`${name} ${g(l.sp,'צמחוני','צמחונית')} – רק עלים ופרחים`:`${name} לא ${g(l.sp,'אוכל','אוכלת')} צמחים, רק חרקים`,'bad');return;}
  if(l.food>90){toast(`${name} לא ${g(l.sp,'רעב','רעבה')} עכשיו`);return;}
  S.inv[type]--;const s=sizeOf(l),b=inner();Object.assign(f,{x:clamp(r.x+Math.cos(r.ang)*s*(SPECIES[l.sp].tongue?1:.9)+rand(-20,20),b.x0,b.x1),y:clamp(r.y+Math.sin(r.ang)*s*.9+rand(-20,20),b.y0,b.y1),t:0,hop:rand(1,2),z:0,vz:0,ang:rand(0,6.28)});
- foods.push(f);r.food=f;snd('tap');}
+ foods.push(f);r.food=f;snd('tap');showStage();}
 function pet(quiet){const l=lizById(selId);if(!l||l.missing)return;const r=ensureRT(l);if(r.petT>0){if(quiet!==true)toast(`${l.name} צריך רגע מנוחה מליטופים`);return;}
- l.happy=Math.min(100,l.happy+12);gainXp(l,3);bump('pet');r.petT=6;r.mode='rest';r.timer=2.5;r.spd=0;snd('pet');for(let i=0;i<5;i++)tparts.push({x:r.x+rand(-20,20),y:r.y-10,vx:rand(-15,15),vy:rand(-70,-40),life:1.1,max:1.1,heart:true});}
+ l.happy=Math.min(100,l.happy+12);gainXp(l,3);bump('pet');r.petT=6;r.mode='rest';r.timer=2.5;r.spd=0;snd('pet');showStage();for(let i=0;i<5;i++)tparts.push({x:r.x+rand(-20,20),y:r.y-10,vx:rand(-15,15),vy:rand(-70,-40),life:1.1,max:1.1,heart:true});}
 let releaseArm=0;
+function showStage(){if(innerWidth>860)return;const el=$('#terraWrap'),r=el.getBoundingClientRect();if(r.top<-r.height*.3||r.bottom>innerHeight+r.height*.3)el.scrollIntoView({behavior:REDUCE?'auto':'smooth',block:'start'});}
+function updateQuick(){const l=lizById(selId),off=!l||l.missing;$('#qWho').textContent=l?l.name:'';
+ $('#qCricket').innerHTML=ICON.cricket+`<small>${S.inv.cricket}</small>`;$('#qLeaf').innerHTML=ICON.leaf+`<small>${S.inv.leaf}</small>`;$('#qPet').innerHTML=ICON.hand+'ליטוף';
+ for(const id of['qCricket','qLeaf','qPet'])$('#'+id).disabled=off;$('#qCricket').setAttribute('aria-label','צרצר');$('#qLeaf').setAttribute('aria-label','עלים');}
 function release(){const l=lizById(selId);if(!l)return;if(Date.now()>releaseArm){releaseArm=Date.now()+3000;renderPanel();const id=selId;setTimeout(()=>{if(selId===id&&view==='home')renderPanel();},3100);return;}
  releaseArm=0;const sp=SPECIES[l.sp];const coins=[0,6,12,25,60][sp.rar]*(stageOf(l.xp)==='adult'?1.5:1)|0,nat=sp.rar*5+(stageOf(l.xp)==='adult'?5:0);
  S.coins+=coins;S.nature+=nat;S.xp+=15;S.released++;bump('release');S.lizards=S.lizards.filter(x=>x!==l);RT.delete(l.id);if(S.escaped&&S.escaped.id===l.id)S.escaped=null;
@@ -1069,7 +1076,7 @@ function updateUI(){if(lastCoins>=0&&S.coins>lastCoins){const c=$('#coins').pare
  const es=S.escaped,eb=$('#escBanner');if(es){const l=lizById(es.id);eb.hidden=!l;if(l){const w=Math.ceil((es.until-Date.now())/1000);$('#escText').textContent=`${l.name} ${g(l.sp,'ברח','ברחה')} מהטרריום!`;$('#escBtn').disabled=w>0;$('#escBtn').textContent=w>0?`חיפוש בעוד ${w} שנ׳`:'חפשו בבית';}}else eb.hidden=true;
  $('#homeDot').hidden=!(es||S.lizards.some(l=>!l.missing&&needOf(l)));
  $('#muteBtn').innerHTML=S.mute?ICON.mute:ICON.sound;$('#muteBtn').setAttribute('aria-label',S.mute?'הפעלת צלילים':'השתקת צלילים');
- if(view==='home'){renderRoster();updateRosterDots();updatePanel();renderMissions();}}
+ if(view==='home'){renderRoster();updateRosterDots();updatePanel();renderMissions();updateQuick();}}
 
 function renderMaps(){const box=$('#maps');box.innerHTML='';const n=speciesCount();
  for(const loc of LOCS){const locked=n<loc.need;const el=document.createElement('article');el.className='card loc'+(locked?' locked':'');
@@ -1129,6 +1136,7 @@ function bind(){document.querySelectorAll('[data-lavi]').forEach(e=>e.innerHTML=
  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{snd('tap');setView(t.dataset.view);});
  $('#terra').addEventListener('pointerdown',terraClick);$('#tripCv').addEventListener('pointerdown',tripClick);$('#houseCv').addEventListener('pointerdown',searchClick);
  $('#houseCv').addEventListener('pointermove',e=>{if(search)search.hover=spotAt(toWorld($('#houseCv'),e,HOUSE));});$('#houseCv').addEventListener('pointerleave',()=>{if(search)search.hover=-1;});
+ $('#qCricket').onclick=()=>feed('cricket');$('#qLeaf').onclick=()=>feed('leaf');$('#qPet').onclick=()=>pet();
  $('#lampBtn').onclick=()=>{S.lamp=!S.lamp;if(S.up.thermo)S.auto=false;snd('tap');updateUI();once('lamp','המנורה מחממת את הסלע. לטאות הן בעלי דם קר – הן מתחממות מהשמש או מהמנורה. אבל אם עובר 38 מעלות, חם מדי!');};
  $('#autoChk').onchange=e=>{S.auto=e.target.checked;};
  $('#waterBtn').onclick=()=>{if(S.water<60)bump('water');S.water=100;snd('water');const[wx,wy]=wpos(DECO.water);for(let i=0;i<10;i++)tparts.push({x:wx+rand(-20,20),y:wy-30,vx:rand(-30,30),vy:rand(-90,-30),g:260,life:.7,max:.7,drop:true,r:3});};
