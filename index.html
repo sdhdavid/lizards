@@ -624,7 +624,7 @@ function moveTo(l,r,tx,ty,dt,mult){const sp=SPECIES[l.sp],len=sizeOf(l);const wa
  if(r.mode!=='escape'){const b=inner();r.x=clamp(r.x,b.x0,b.x1);r.y=clamp(r.y,b.y0,b.y1);}}
 function startEscape(l,r){r.mode='escape';r.food=null;r.tng=null;const opts=[[-200,r.y],[TER.W+200,r.y],[r.x,-200],[r.x,TER.H+200]];opts.sort((a,b)=>dist(r.x,r.y,a[0],a[1])-dist(r.x,r.y,b[0],b[1]));[r.tx,r.ty]=opts[0];
  snd('escape');toast(`אוי! ${l.name} ${g(l.sp,'קופץ','קופצת')} מהטרריום!`,'bad');}
-function finishEscape(l){l.missing=true;RT.delete(l.id);S.escaped={id:l.id,spot:Math.floor(Math.random()*SPOTS.length),until:0};rosterKey='';if(selId===l.id)renderPanel();
+function finishEscape(l){l.missing=true;RT.delete(l.id);S.escaped={id:l.id,spot:Math.floor(Math.random()*SPOTS.length),until:0};rosterKey='';selId=l.id;if(view==='home'){renderPanel();showStage();}
  once('esc1',`אוי לא! ${l.name} ${g(l.sp,'ברח','ברחה')}! לטאות בורחות כשהן לא מרוצות, וגם סתם כשהמכסה לא סגור טוב. בואו נחפש בבית – לחצו על "חפשו בבית".`);}
 function freshName(){const used=new Set(S.lizards.map(l=>l.name));const free=NAMES.filter(n=>!used.has(n));return free.length?pick(free):pick(NAMES)+' '+(S.uid);}
 
@@ -696,7 +696,8 @@ function drawTerra(){const cv=$('#terra');const d=fitCanvas(cv,[1000,620],[640,7
  const sel=list.find(a=>a[0].id===selId);
  if(sel){const[l,r]=sel;const s=sizeOf(l);x.strokeStyle='rgba(255,255,255,.9)';x.setLineDash([8,6]);x.lineWidth=2.5;x.beginPath();x.ellipse(r.x,r.y,s*.62,s*.45,r.ang,0,7);x.stroke();x.setLineDash([]);}
  const[gx0,gy0]=wpos(DECO.log);const hidden=list.filter(a=>{const dx=a[1].x-gx0,dy=a[1].y-gy0;return a[1].mode!=='escape'&&Math.abs(dx*Math.cos(.12)-dy*Math.sin(.12))<120&&Math.abs(dx*Math.sin(.12)+dy*Math.cos(.12))<46;});
- drawLogBase(x);for(const[l,r]of hidden)drawOne(x,l,r);drawLog(x);
+ drawLogBase(x);for(const[l,r]of hidden)drawOne(x,l,r);x.globalAlpha=hidden.length?.45:1;drawLog(x);x.globalAlpha=1;
+ for(const[l,r]of hidden){x.font='600 17px Rubik, sans-serif';x.textAlign='center';x.direction='rtl';const t=l.name+' במחבוא',tw=x.measureText(t).width+16;x.fillStyle='rgba(28,49,37,.8)';x.beginPath();x.roundRect(r.x-tw/2,r.y+30,tw,24,12);x.fill();x.fillStyle='#fff';x.fillText(t,r.x,r.y+47);}
  for(const[l,r]of list.filter(a=>!hidden.includes(a)).sort((a,b)=>a[1].y-b[1].y))drawOne(x,l,r);
  for(const f of foods)if(f.type==='cricket')drawCricket(x,f);else if(f.held)drawLeaf(x,f);
  for(const[l,r]of list){const k=needOf(l);if(k&&r.mode!=='escape'){const s=sizeOf(l);bubble(x,r.x+8,r.y-s*.32-26+Math.sin(simTime*3+l.id)*2,k);}}
@@ -1026,7 +1027,7 @@ function renderPanel(){const p=$('#panel');const l=lizById(selId);
   p.querySelector('#goTrip')?.addEventListener('click',()=>setView('trip'));return;}
  const sp=SPECIES[l.sp];const armed=Date.now()<releaseArm;
  p.innerHTML=`<div class="phead"><canvas width="172" height="172" id="pcv"></canvas><div class="pname"><input id="lizName" maxlength="14" value="${esc(l.name)}" aria-label="שם הלטאה"><span class="sp">${esc(sp.name)}</span><div class="tags"><span class="tag" id="pStage">${stageName(l)}</span><span class="tag r${sp.rar}">${RAR[sp.rar]}</span></div></div></div>
- ${l.missing?`<div class="need">${esc(l.name)} ${g(l.sp,'ברח','ברחה')} מהטרריום ו${g(l.sp,'מסתתר','מסתתרת')} איפשהו בבית.</div>`:''}
+ ${l.missing?`<div class="need">${esc(l.name)} ${g(l.sp,'ברח','ברחה')} מהטרריום ו${g(l.sp,'מסתתר','מסתתרת')} איפשהו בבית.</div><button class="btn primary" id="pSearch">חפשו את ${esc(l.name)} בבית</button>`:''}
  <div class="stats">
   <div class="stat" id="s-food"><span>שובע</span><span class="bar b-food"><i></i></span><span class="v"></span></div>
   <div class="stat" id="s-warm"><span>חום גוף</span><span class="bar b-warm"><i></i></span><span class="v"></span></div>
@@ -1043,6 +1044,7 @@ function renderPanel(){const p=$('#panel');const l=lizById(selId);
  <p class="muted" style="margin:0">${esc(sp.fact)}</p>`;
  const cv=p.querySelector('#pcv');portrait(cv,l.sp,{vertical:true,seed:l.id,scale:.55+.45*Math.min(1,l.xp/300),col:l.sp==='cham'?mix('#8D7B47',sp.col,clamp(l.happy/100,0,1)):undefined});
  p.querySelector('#lizName').addEventListener('input',e=>{l.name=e.target.value.trim()||l.name;rosterKey='';});
+ p.querySelector('#pSearch')?.addEventListener('click',startSearch);
  p.querySelector('#aCricket').onclick=()=>feed('cricket');p.querySelector('#aLeaf').onclick=()=>feed('leaf');p.querySelector('#aPet').onclick=pet;p.querySelector('#aFree').onclick=release;
  updatePanel();}
 function setStat(id,v,label){const el=$('#'+id);if(!el)return;el.querySelector('i').style.width=clamp(v,0,100)+'%';el.querySelector('.v').textContent=label??Math.round(v);el.classList.toggle('low',v<30&&id!=='s-grow');}
@@ -1073,7 +1075,7 @@ function updateUI(){if(lastCoins>=0&&S.coins>lastCoins){const c=$('#coins').pare
  $('#lampTxt').textContent='מנורת חימום: '+(S.lamp?'דולקת':'כבויה');$('#lampBtn').classList.toggle('on',S.lamp);$('#autoWrap').hidden=!S.up.thermo;$('#autoChk').checked=S.auto;
  $('#waterTxt').textContent=Math.round(S.water)+'%';$('#waterBtn').classList.toggle('warn',S.water<20);$('#dropTxt').textContent=S.drops.length;$('#cleanBtn').classList.toggle('warn',S.drops.length>3);
  $('#capTxt').textContent=`דיירים ${occupied()}/${S.cap}`;
- const es=S.escaped,eb=$('#escBanner');if(es){const l=lizById(es.id);eb.hidden=!l;if(l){const w=Math.ceil((es.until-Date.now())/1000);$('#escText').textContent=`${l.name} ${g(l.sp,'ברח','ברחה')} מהטרריום!`;$('#escBtn').disabled=w>0;$('#escBtn').textContent=w>0?`חיפוש בעוד ${w} שנ׳`:'חפשו בבית';}}else eb.hidden=true;
+ const es=S.escaped,eb=$('#escBanner');if(es){const l=lizById(es.id);eb.hidden=!l;if(l){const w=Math.ceil((es.until-Date.now())/1000);$('#escText').textContent=`${l.name} ${g(l.sp,'ברח','ברחה')} מהטרריום!`;$('#escBtn').disabled=w>0;$('#escBtn').textContent=w>0?`חיפוש בעוד ${w} שנ׳`:'חפשו בבית';const ps=$('#pSearch');if(ps){ps.disabled=w>0;ps.textContent=w>0?`אפשר לחפש שוב בעוד ${w} שנ׳`:`חפשו את ${l.name} בבית`;}}}else eb.hidden=true;
  $('#homeDot').hidden=!(es||S.lizards.some(l=>!l.missing&&needOf(l)));
  $('#muteBtn').innerHTML=S.mute?ICON.mute:ICON.sound;$('#muteBtn').setAttribute('aria-label',S.mute?'הפעלת צלילים':'השתקת צלילים');
  if(view==='home'){renderRoster();updateRosterDots();updatePanel();renderMissions();updateQuick();}}
