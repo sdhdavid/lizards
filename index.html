@@ -939,7 +939,7 @@ function startTrip(loc){const n=14;const contents=['liz','liz','liz','liz','liz'
  const wp=[],ok=loc.ok||(()=>true);let guard=0;while(wp.length<n&&guard++<6000){const px=rand(75,d.W-75),py=rand(80,d.H-70),relax=guard>4500;if((relax||ok(px,py,d.W,d.H))&&wp.every(q=>Math.hypot(q[0]-px,q[1]-py)>(relax?110:128)))wp.push([px,py]);}
  const pts=wp.map(q=>[q[0]/d.W,q[1]/d.H]);
  trip={loc,energy:8+(S.up.bottle?3:0),max:8+(S.up.bottle?3:0),hints:S.up.glass?2:0,hintT:0,objs:pts.map((p,i)=>({fx:p[0],fy:p[1],type:pick(loc.objs),c:contents[i]||'none',seed:i*17+3+Math.floor(Math.random()*1000),flipped:false,ft:0,revealed:false,rot:rand(-.4,.4),sz:rand(.9,1.15),rp:rand(3.5,6.5),ro:rand(0,6),lastR:-1})),
-  tod:pick(['בוקר','בוקר','צהריים','ערב']),streak:0,best:0,found:0,coinsFound:0,dust:[],items:[],amb:initAmb(loc,d.W,d.H),hover:-1,
+  tod:pick(['בוקר','בוקר','צהריים','ערב']),streak:0,best:0,found:0,coinsFound:0,dust:[],items:[],loot:[],amb:initAmb(loc,d.W,d.H),hover:-1,
   crit:[],parts:[],caught:[],paused:false,endT:-1,t:0,lavi:{x:d.W/2,y:d.H-50,tx:d.W/2,ty:d.H-50,ang:-Math.PI/2,face:null}};
  {const nb=Math.random()<.45?1:2,pool=loc.table.filter(([k])=>SPECIES[k].kind!=='mantis'&&k!=='cham'&&k!=='monitor');
   for(let b=0;b<nb&&pool.length;b++){let pt=null;for(let g2=0;g2<400&&!pt;g2++){const px=rand(90,d.W-90),py=rand(110,d.H-120);if(trip.objs.every(o=>Math.hypot(o.fx*d.W-px,o.fy*d.H-py)>105)&&trip.crit.every(c=>Math.hypot(c.x-px,c.y-py)>160)&&Math.hypot(px-d.W/2,py-(d.H-50))>140&&(!loc.ok||loc.ok(px,py,d.W,d.H)))pt=[px,py];}
@@ -983,7 +983,7 @@ function reveal(o){const x=o.fx*TRIP.W,y=o.fy*TRIP.H;
  else if(o.c==='coin'){const n=Math.round(rand(4,11));S.coins+=n;trip.coinsFound+=n;snd('coin');floatT(x,y-34,`\u2066+${n}\u2069 מטבעות`,'#B9800B');burstAt(x,y,n);trip.items.push({type:'glint',x,y,t:0});}
  else if(o.c==='treasure'){const n=Math.round(rand(18,30));S.coins+=n;trip.coinsFound+=n;snd('chest');floatT(x,y-60,`אוצר! \u2066+${n}\u2069 מטבעות`,'#B9800B');trip.items.push({type:'chest',x,y,t:0});setTimeout(()=>{if(trip)burstAt(x,y-10,n);},350);once('chest1','תיבת אוצר! מישהו קבר פה מטבעות לפני הרבה זמן. לפעמים יש אחת כזו במסע.');}
  else if(o.c==='water'){trip.energy=Math.min(trip.max,trip.energy+2);snd('water');floatT(x,y-40,'מים! \u2066+2\u2069 הרמות','#1F7F94');trip.items.push({type:'bottle',x,y,t:0});renderTripHud();}
- else if(o.c==='food'){const t=Math.random()<.6?'cricket':'leaf';S.inv[t]+=3;snd('coin');floatT(x,y-30,t==='cricket'?'\u2066+3\u2069 צרצרים':'\u2066+3\u2069 עלים','#2E7746');}
+ else if(o.c==='food'){const t=Math.random()<.6?'cricket':'leaf';S.inv[t]+=3;snd('coin');for(let i=0;i<3;i++)trip.loot.push({type:t,x:x+rand(-14,14),y:y+rand(-10,10),t:-.25-i*.22,hp:0,sx:0,sy:0,ex:0,ey:0,ang:rand(0,6.28),spin:rand(-3,3)});floatT(x,y-30,t==='cricket'?'\u2066+3\u2069 צרצרים':'\u2066+3\u2069 עלים','#2E7746');}
  else floatT(x,y-30,pick(['רק אדמה','ריק','כלום פה','רק נמלים']),'rgba(40,40,40,.7)');}
 function tripStep(dt){trip.t+=dt;if(trip.hintT>0)trip.hintT-=dt;
  {const L=trip.lavi,dx=L.tx-L.x,dy=L.ty-L.y,dd=Math.hypot(dx,dy);if(dd>3){const v=Math.min(dd,760*dt);L.x+=dx/dd*v;L.y+=dy/dd*v;L.ang=Math.atan2(dy,dx);L.mv=true;}else{L.mv=false;if(L.face)L.ang=Math.atan2(L.face[1]-L.y,L.face[0]-L.x);}}
@@ -1011,6 +1011,11 @@ function tripStep(dt){trip.t+=dt;if(trip.hintT>0)trip.hintT-=dt;
  for(const p of trip.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}trip.parts=trip.parts.filter(p=>p.life>0);
  for(const d of trip.dust){d.x+=d.vx*dt;d.y+=d.vy*dt;d.vx*=.92;d.vy*=.92;d.r+=dt*14;d.life-=dt;}trip.dust=trip.dust.filter(d=>d.life>0);
  for(const it of trip.items)it.t+=dt;trip.items=trip.items.filter(it=>it.t<3.4);
+ for(const l of trip.loot){l.t+=dt;if(l.t<0)continue;const L=trip.lavi,hopT=l.type==='cricket'?.32:.5;
+  if(l.hp<=0){l.sx=l.x;l.sy=l.y;const d=dist(l.x,l.y,L.x,L.y),st=Math.min(d,l.type==='cricket'?85:110);if(d<26){l.done=true;const n=performance.now();if(n-lastTink>45){lastTink=n;snd('tink');}trip.parts.push({x:L.x,y:L.y-34,vx:0,vy:-40,life:.7,max:.7,text:'\u2066+1\u2069',col:'#2E7746'});renderTripHud();continue;}
+   const a=Math.atan2(L.y-l.y,L.x-l.x)+rand(-.35,.35);l.ex=l.x+Math.cos(a)*st;l.ey=l.y+Math.sin(a)*st;l.ang=a;l.hp=1e-6;}
+  l.hp+=dt/hopT;const u=Math.min(1,l.hp);l.x=l.sx+(l.ex-l.sx)*u;l.y=l.sy+(l.ey-l.sy)*u;l.z=u;l.rot=(l.rot||0)+l.spin*dt;if(u>=1)l.hp=0;}
+ trip.loot=trip.loot.filter(l=>!l.done);
  for(const o of trip.objs){if(o.flipped||o.c!=='liz')continue;const k=Math.floor((trip.t+o.ro)/o.rp);if(k!==o.lastR&&((trip.t+o.ro)%o.rp)<.1){o.lastR=k;const R=50*o.sz;for(let i=0;i<3;i++){const a=rand(0,6.28);trip.dust.push({x:o.fx*TRIP.W+Math.cos(a)*R*.9,y:o.fy*TRIP.H+Math.sin(a)*R*.7,vx:Math.cos(a)*30,vy:Math.sin(a)*20,r:3,life:.5,max:.5,col:'#B89A6A'});}}}
  const busy=trip.crit.some(c=>c.kind==='liz'&&c.st!=='bask')||trip.objs.some(o=>o.flipped&&!o.revealed)||!!trip.bait;
  if(trip.energy<=0&&!busy){if(trip.endT<0)trip.endT=1.1;else{trip.endT-=dt;if(trip.endT<=0)endTrip();}}}
@@ -1193,6 +1198,7 @@ function drawTrip(dt){const cv=$('#tripCv');const d=fitTrip(cv);const key=d.W+'x
   if(i===trip.hover&&trip.energy>0){x.save();x.strokeStyle='rgba(255,255,255,.75)';x.lineWidth=4;x.shadowColor='rgba(255,255,255,.9)';x.shadowBlur=14;x.beginPath();x.ellipse(ox,oy,56*o.sz,46*o.sz,0,0,7);x.stroke();x.restore();}
   o.rot+=wob;drawObj(x,o,ox,oy,o.sz*(i===trip.hover?1.04:1));o.rot-=wob;});
  for(const it of trip.items)drawItem(x,it);
+ for(const l of trip.loot){if(l.t<0){x.save();x.globalAlpha=.9;}if(l.type==='cricket')drawCricket(x,{x:l.x,y:l.y,z:l.t<0?0:l.z,ang:l.ang},1.25);else{const zz=l.t<0?0:Math.sin((l.z||0)*Math.PI)*26;x.fillStyle='rgba(0,0,0,.15)';x.beginPath();x.ellipse(l.x+4,l.y+6,10,5,0,0,7);x.fill();drawLeaf(x,{x:l.x,y:l.y-zz,ang:l.rot||0});}if(l.t<0)x.restore();}
  drawAmb(x,dt);
  if(trip.loc.id==='dunes'||trip.loc.id==='ramon'){const bt=(trip.t%17)/4.5;if(bt<1){const fl=Math.sin(trip.t*9)*.45+.65;x.save();x.translate(-90+bt*(TRIP.W+180),TRIP.H*(.2+.5*bt));x.rotate(.4+Math.PI/2);x.fillStyle='rgba(30,20,10,.2)';x.beginPath();x.moveTo(0,-10);x.quadraticCurveTo(-20,-30*fl,-50,-12*fl);x.quadraticCurveTo(-22,-6,-4,10);x.lineTo(0,22);x.lineTo(4,10);x.quadraticCurveTo(22,-6,50,-12*fl);x.quadraticCurveTo(20,-30*fl,0,-10);x.fill();x.restore();}}
  for(let i=0;i<2;i++){const cx=((trip.t*(16+i*7)+i*560)%(TRIP.W+640))-320,cy=TRIP.H*(.28+i*.42);const cg=x.createRadialGradient(cx,cy,20,cx,cy,280);cg.addColorStop(0,'rgba(20,30,40,.14)');cg.addColorStop(1,'rgba(20,30,40,0)');x.fillStyle=cg;x.fillRect(cx-290,cy-290,580,580);}
