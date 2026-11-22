@@ -338,6 +338,8 @@ canvas{display:block;width:100%;touch-action:manipulation;-webkit-tap-highlight-
     <section id="view-book" hidden style="flex-direction:column;gap:14px">
       <div class="sectionhead"><h2>המגדיר של לביא</h2><span class="muted" id="bookSum"></span></div>
       <div class="guide" id="guide"></div>
+      <div class="sectionhead"><h2>גמלי שלמה</h2><span class="muted" id="bookSum2"></span></div>
+      <div class="guide" id="guide2"></div>
       <p class="note"><b>במציאות:</b> כל הזוחלים בטבע בישראל מוגנים בחוק. בטיול מתבוננים, מצלמים ומשאירים אותם בבית שלהם. את האוסף מגדלים כאן, במשחק.</p>
     </section>
 
@@ -404,21 +406,35 @@ const SPECIES={
   col:'#A99F7A',col2:'#4F4732',pat:'bands',head:.13,body:.3,hw:.11,bw:.15,tw:.09,eye:.8,leg:.9,forked:true,
   fact:'הלטאה הגדולה ביותר בישראל – יכול להגיע ליותר ממטר אורך! הוא צד מכרסמים, ציפורים ואפילו נחשים, ומריח עם הלשון המפוצלת.'},
 };
+Object.assign(SPECIES,{
+ mantis:{kind:'mantis',name:'גמל שלמה מצוי',latin:'Mantis religiosa',g:'m',loc:'yard',rar:2,diet:'insect',len:95,spd:70,
+  col:'#7FB94A',col2:'#E9F2C8',wing:'#B9D98A',aw:.15,pro:.05,head:.15,body:.3,hw:.12,bw:.12,tw:.06,eye:1,tongue:true,fly:true,spot:true,
+  fact:'יכול לסובב את הראש הצידה ולהסתכל מעבר לכתף. ברגליים הקדמיות הקוצניות הוא תופס חרקים מהר מאוד, ובצד הפנימי שלהן יש כתם שחור עם מרכז לבן.'},
+ empusa:{kind:'mantis',name:'אמפוזה',latin:'Empusa',g:'f',loc:'carmel',rar:3,diet:'insect',len:100,spd:55,
+  col:'#A8B36A',col2:'#6E7A3A',wing:'#C9CF95',aw:.11,pro:.035,cone:true,lobes:true,head:.15,body:.3,hw:.12,bw:.1,tw:.06,eye:1,tongue:true,fly:true,
+  fact:'על הראש שלה יש "כתר" מחודד כמו קרן, ולזכרים יש מחושים מנוצים כמו מסרק. הגוף הדק והבליטות ברגליים עוזרים לה להיראות כמו ענף יבש.'},
+ erem:{kind:'mantis',name:'גמל שלמה מדברי',latin:'Eremiaphila',g:'m',loc:'dunes',rar:2,diet:'insect',len:62,spd:250,
+  col:'#C9B08A',col2:'#8A6E4A',aw:.2,pro:.06,short:true,head:.15,body:.3,hw:.12,bw:.14,tw:.06,eye:1,tongue:true,
+  fact:'חי על הקרקע במדבר, בצבע של חול ואבנים. הכנפיים שלו קטנטנות והוא לא עף – במקום זה הוא רץ מהר מאוד על החול.'},
+ bleph:{kind:'mantis',name:'גמל שלמה פרחוני',latin:'Blepharopsis mendica',g:'m',loc:'ramon',rar:3,diet:'insect',len:88,spd:60,
+  col:'#D3DBB4',col2:'#7E9A5C',wing:'#5B3C86',aw:.17,pro:.05,lobes:true,head:.15,body:.3,hw:.12,bw:.13,tw:.06,eye:1,tongue:true,fly:true,
+  fact:'על הגוף והרגליים שלו יש בליטות דמויות עלים, והוא נראה כמו חלק מקוץ במדבר. כשמפחידים אותו הוא פותח כנפיים כהות וצבעוניות כדי להבהיל את הטורף.'}});
 for(const k in SPECIES)SPECIES[k].id=k;
 const ORDER=['gecko','skink','fan','agama','green','cham','ocell','fringe','sinai','uro','monitor'];
+const MORDER=['mantis','empusa','erem','bleph'];const ALL=ORDER.concat(MORDER);
 const RAR=[null,'נפוץ','לא שכיח','נדיר','אגדי'];
 const DIET={insect:'אוכל חרקים',plant:'צמחוני',omni:'חרקים וצמחים'};
 const LOCS=[
  {id:'yard',name:'החצר של סבתא',need:0,blurb:'בין העציצים, הלבנים והעלים של סבתא גרות לטאות ממש ליד הבית.',
-  g1:'#86A85A',g2:'#6C8E45',objs:['rock','pot','leaves','brick'],table:[['gecko',42],['skink',43],['fan',15]],
+  g1:'#86A85A',g2:'#6C8E45',objs:['rock','pot','leaves','brick'],table:[['gecko',38],['skink',38],['fan',13],['mantis',12]],
   ok:(px,py,W,H)=>{const pw=Math.min(W*.34,340),ph=Math.min(H*.22,150);if(py<145)return false;if(px>W-pw-55&&py<ph+65)return false;return Math.hypot(px-W*.01,py-H*.52)>Math.min(150,W*.17)+45;}},
  {id:'carmel',name:'חורש בכרמל',need:3,blurb:'אלונים, סלעים ושלכת. חרדונים מתחממים על הסלעים, ואם מסתכלים טוב – אולי גם זיקית.',
-  g1:'#7E6A48',g2:'#5F5033',objs:['rock','bush','log','leaves'],table:[['agama',45],['green',36],['cham',13],['fan',6]],
+  g1:'#7E6A48',g2:'#5F5033',objs:['rock','bush','log','leaves'],table:[['agama',40],['green',32],['cham',12],['fan',5],['empusa',10],['mantis',7]],
   ok:(px,py,W,H)=>Math.hypot(px-W*.03,py-H*.97)>Math.min(170,W*.2)+40&&Math.hypot(px-W*.02,py-H*.03)>Math.min(150,W*.18)+40&&Math.hypot(px-W*.62,py-H*.56)>100},
  {id:'dunes',name:'חולות ניצנה',need:5,blurb:'דיונות של חול רך. כאן גרות לטאות שרצות על החול ואפילו שוחות בתוכו.',
-  g1:'#E8D2A0',g2:'#D3B97F',objs:['mound','bush','mound','rock'],table:[['ocell',52],['fringe',40],['skink',8]]},
+  g1:'#E8D2A0',g2:'#D3B97F',objs:['mound','bush','mound','rock'],table:[['ocell',46],['fringe',35],['skink',6],['erem',14]]},
  {id:'ramon',name:'מכתש רמון',need:7,blurb:'סלעים צבעוניים ושמש חזקה. אומרים שכאן חי הכוח האפור – הלטאה הגדולה בארץ.',
-  g1:'#BC845D',g2:'#956240',objs:['rock','slab','bush','rock'],table:[['sinai',38],['uro',27],['fringe',27],['monitor',8]],
+  g1:'#BC845D',g2:'#956240',objs:['rock','slab','bush','rock'],table:[['sinai',34],['uro',24],['fringe',24],['monitor',8],['bleph',11]],
   ok:(px,py,W,H)=>Math.hypot(px-W*.97,py-H*.92)>Math.min(150,W*.18)+40&&Math.hypot(px-W*.2,py-H*.72)>115&&Math.hypot(px-W*.58,py-H*.16)>100},
 ];
 const LOCBY=Object.fromEntries(LOCS.map(l=>[l.id,l]));
@@ -436,7 +452,7 @@ function load(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const d=JSO
 function save(){if(!S)return;S.last=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
 const stageOf=xp=>xp<90?'baby':xp<300?'young':'adult';
 const STAGE={baby:'תינוק',young:'צעיר',adult:'בוגר'};
-const stageName=(l)=>{const s=stageOf(l.xp);return s==='adult'?g(l.sp,'בוגר','בוגרת'):s==='young'?g(l.sp,'צעיר','צעירה'):g(l.sp,'תינוק','תינוקת');};
+const stageName=(l)=>{const s=stageOf(l.xp);if(SPECIES[l.sp].kind==='mantis')return s==='adult'?g(l.sp,'בוגר','בוגרת'):s==='young'?'נימפה':'נימפה קטנה';return s==='adult'?g(l.sp,'בוגר','בוגרת'):s==='young'?g(l.sp,'צעיר','צעירה'):g(l.sp,'תינוק','תינוקת');};
 const sizeOf=l=>SPECIES[l.sp].len*1.45*(0.52+0.48*Math.min(1,l.xp/300));
 const occupied=()=>S.lizards.length+S.eggs.length;
 const speciesCount=()=>ORDER.filter(k=>S.seen[k]).length;
@@ -499,7 +515,49 @@ function drawPattern(ctx,sp,pts,L,seed,base){const r=seeded(seed*31+7),h=sp.head
   case'uro':for(let i=0;i<40;i++)dot(h*.7+r()*(hb-h*.7),r()*1.7-.85,L*(.006+r()*.01),rgba('#E9D99A',.8));for(let i=0;i<20;i++)dot(h+r()*b,r()*1.6-.8,L*.006,rgba(c2,.8));for(let s=hb+.01;s<.99;s+=.045)band(s,L*.016,rgba(c2,.9));break;
   case'bands':for(let s=h*.9;s<.98;s+=.05)band(s,L*.026,rgba(c2,.75));for(let i=0;i<30;i++)dot(h+r()*b,r()*1.6-.8,L*.005,'rgba(250,240,200,.6)');break;}}
 /* o: {sp,x,y,ang,len,phase,amp,bend,walking,seed,blink,tongue,alpha,col,silhouette,look} */
-function drawLizard(ctx,o){const sp=SPECIES[o.sp],L=o.len;const pts=buildSpine(sp,L,o.phase||0,o.amp||0,o.bend||0);const path=bodyPath(pts);
+function drawMantis(ctx,o){const sp=SPECIES[o.sp],L=o.len,sil=o.silhouette;const base=sil||o.col||sp.col,dark=sil||shade(o.col||sp.col,-.32),light=sil||shade(o.col||sp.col,.28);
+ const ph=o.phase||0,walk=o.walking,disp=o.display,strike=o.tongue||0;
+ ctx.save();ctx.translate(o.x,o.y);ctx.rotate((o.ang||0)+(walk?0:Math.sin(ph*1.6)*.05));ctx.globalAlpha=o.alpha??1;ctx.lineCap='round';ctx.lineJoin='round';
+ const aw=sp.aw*L,ax=sp.short?-.2*L:-.28*L,arx=sp.short?.17*L:.26*L;
+ if(!sil&&!o.noShadow){ctx.fillStyle='rgba(30,20,10,.18)';ctx.beginPath();ctx.ellipse(ax+L*.03,L*.035,arx*1.05,aw*.6,0,0,7);ctx.fill();}
+ /* walking legs */
+ ctx.strokeStyle=dark;ctx.lineWidth=Math.max(1.1,L*.013);
+ for(const[px,fa,ta,fl,tl,ofs]of[[.04,1.2,2.1,.17,.17,0],[-.07,1.85,2.65,.2,.25,Math.PI]])for(const sd of[1,-1]){const sw=walk?Math.sin(ph+ofs+(sd>0?0:Math.PI))*.32:0;
+  const a1=sd*(fa+sw),a2=sd*(ta+sw*.5),kx=px*L+Math.cos(a1)*fl*L,ky=Math.sin(a1)*fl*L;ctx.beginPath();ctx.moveTo(px*L,0);ctx.lineTo(kx,ky);ctx.lineTo(kx+Math.cos(a2)*tl*L,ky+Math.sin(a2)*tl*L);ctx.stroke();
+  if(sp.lobes&&!sil){ctx.fillStyle=light;ctx.beginPath();ctx.ellipse((px*L+kx)/2,ky/2,fl*L*.28,L*.022,a1,0,7);ctx.fill();}}
+ /* wings spread in threat display */
+ if(disp&&!sp.short&&sp.wing){for(const sd of[1,-1]){ctx.fillStyle=sil||rgba(sp.wing,.88);ctx.beginPath();ctx.moveTo(-.04*L,0);for(let a=1.9;a<=2.95;a+=.15)ctx.lineTo(-.04*L+Math.cos(a)*.46*L,sd*Math.sin(a)*.46*L);ctx.closePath();ctx.fill();
+  if(!sil){ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;for(let a=2;a<=2.9;a+=.18){ctx.beginPath();ctx.moveTo(-.04*L,0);ctx.lineTo(-.04*L+Math.cos(a)*.44*L,sd*Math.sin(a)*.44*L);ctx.stroke();}
+   ctx.fillStyle=sp.id==='bleph'?'#F2C230':'#2A2A2A';ctx.beginPath();ctx.arc(-.04*L+Math.cos(2.4)*.3*L,sd*Math.sin(2.4)*.3*L,L*.04,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-.04*L+Math.cos(2.4)*.3*L,sd*Math.sin(2.4)*.3*L,L*.015,0,7);ctx.fill();}}}
+ /* abdomen */
+ ctx.fillStyle=base;ctx.beginPath();ctx.ellipse(ax,0,arx,aw/2,0,0,7);ctx.fill();
+ if(!sil){ctx.strokeStyle=rgba('#000000',.18);ctx.lineWidth=Math.max(1,L*.008);for(let k=1;k<6;k++){const xx=ax+arx*(-.8+k*.3);ctx.beginPath();ctx.moveTo(xx,-aw*.45);ctx.quadraticCurveTo(xx-L*.015,0,xx,aw*.45);ctx.stroke();}
+  if(sp.lobes){ctx.fillStyle=sp.col2;for(const sd of[1,-1])for(let k=0;k<3;k++){ctx.beginPath();ctx.ellipse(ax-arx*.4+k*arx*.35,sd*aw*.45,L*.03,L*.014,0,0,7);ctx.fill();}}}
+ /* folded wings */
+ if(!disp&&!sp.short){ctx.fillStyle=sil||rgba(sp.wing||sp.col,.62);ctx.beginPath();ctx.moveTo(-.02*L,0);ctx.quadraticCurveTo(-.25*L,aw*.62,-.56*L,aw*.08);ctx.quadraticCurveTo(-.3*L,-aw*.55,-.02*L,0);ctx.fill();
+  if(!sil){ctx.strokeStyle=rgba('#FFFFFF',.45);ctx.lineWidth=Math.max(1,L*.008);ctx.beginPath();ctx.moveTo(-.04*L,0);ctx.quadraticCurveTo(-.3*L,aw*.12,-.54*L,aw*.05);ctx.stroke();
+   if(sp.id==='mantis'){ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.arc(-.2*L,aw*.12,L*.012,0,7);ctx.fill();}}}
+ else if(sp.short&&!sil){ctx.fillStyle=rgba(sp.col2,.7);for(const sd of[1,-1]){ctx.beginPath();ctx.ellipse(-.07*L,sd*aw*.22,L*.05,L*.025,sd*.3,0,7);ctx.fill();}}
+ /* prothorax */
+ const pw=sp.pro*L;ctx.fillStyle=base;ctx.beginPath();ctx.moveTo(-.05*L,-pw*.8);ctx.lineTo(.2*L,-pw*.5);ctx.quadraticCurveTo(.27*L,-pw,.29*L,-pw*.7);ctx.lineTo(.29*L,pw*.7);ctx.quadraticCurveTo(.27*L,pw,.2*L,pw*.5);ctx.lineTo(-.05*L,pw*.8);ctx.closePath();ctx.fill();
+ if(sp.lobes&&!sil){ctx.fillStyle=light;for(const sd of[1,-1]){ctx.beginPath();ctx.ellipse(.22*L,sd*pw*.9,L*.05,L*.018,0,0,7);ctx.fill();}}
+ if(!sil){ctx.strokeStyle=rgba('#000000',.2);ctx.lineWidth=Math.max(1,L*.007);ctx.beginPath();ctx.moveTo(-.04*L,0);ctx.lineTo(.27*L,0);ctx.stroke();}
+ /* raptorial forelegs */
+ const fw=Math.max(2,L*.03);
+ for(const sd of[1,-1]){const cx=.26*L,cy=sd*pw*.7;let kx,ky,tx,ty;
+  if(strike>0){kx=cx+.12*L+strike*.45;ky=sd*.05*L;tx=kx+strike*.55+.05*L;ty=sd*.015*L;}
+  else if(disp){kx=cx+.06*L;ky=sd*.17*L;tx=kx+.11*L;ty=sd*.2*L;}
+  else{kx=cx+.13*L;ky=sd*.055*L;tx=cx+.06*L;ty=sd*.04*L;}
+  ctx.strokeStyle=dark;ctx.lineWidth=fw+2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(kx,ky);ctx.lineTo(tx,ty);ctx.stroke();ctx.strokeStyle=base;ctx.lineWidth=fw;ctx.stroke();
+  if(!sil){ctx.strokeStyle=dark;ctx.lineWidth=1;for(let k=1;k<4;k++){const qx=cx+(kx-cx)*k/4,qy=cy+(ky-cy)*k/4;ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(qx+(tx-kx)*.06,qy-sd*L*.02);ctx.stroke();}
+   if(sp.spot&&disp){ctx.fillStyle='#111';ctx.beginPath();ctx.arc((cx+kx)/2,(cy+ky)/2,L*.018,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc((cx+kx)/2,(cy+ky)/2,L*.007,0,7);ctx.fill();}}}
+ /* head */
+ const hw=.075*L;ctx.fillStyle=base;ctx.beginPath();ctx.moveTo(.28*L,-hw);ctx.quadraticCurveTo(.33*L,-hw*.2,.385*L,0);ctx.quadraticCurveTo(.33*L,hw*.2,.28*L,hw);ctx.quadraticCurveTo(.26*L,0,.28*L,-hw);ctx.fill();
+ if(sp.cone){ctx.beginPath();ctx.moveTo(.3*L,-hw*.25);ctx.lineTo(.47*L,0);ctx.lineTo(.3*L,hw*.25);ctx.fill();}
+ ctx.strokeStyle=dark;ctx.lineWidth=sp.cone?Math.max(1.4,L*.012):Math.max(.8,L*.006);for(const sd of[1,-1]){ctx.beginPath();ctx.moveTo(.36*L,sd*hw*.3);ctx.quadraticCurveTo(.46*L,sd*hw*.6,.53*L,sd*.13*L);ctx.stroke();}
+ if(!sil){for(const sd of[1,-1]){ctx.fillStyle=light;ctx.beginPath();ctx.arc(.295*L,sd*hw*.82,L*.026*sp.eye,0,7);ctx.fill();ctx.fillStyle='#1A1A10';ctx.beginPath();ctx.arc(.3*L,sd*hw*.78,L*.009,0,7);ctx.fill();}}
+ ctx.restore();}
+function drawLizard(ctx,o){const sp=SPECIES[o.sp],L=o.len;if(sp.kind==='mantis')return drawMantis(ctx,o);const pts=buildSpine(sp,L,o.phase||0,o.amp||0,o.bend||0);const path=bodyPath(pts);
  ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.ang||0);ctx.globalAlpha=o.alpha??1;
  const base=o.col||sp.col,sil=o.silhouette,dark=sil?sil:shade(base,-.3);
  if(!sil&&!o.noShadow){ctx.save();ctx.translate(L*.025,L*.045);ctx.fillStyle='rgba(30,20,10,.2)';ctx.fill(path);ctx.restore();}
@@ -583,7 +641,7 @@ function simulate(dt){simTime+=dt;
   const p=l.happy<30?(S.up.lid?1/420:1/160):(S.up.lid?0:1/2600);if(Math.random()<p){startEscape(l,r);break;}}}}
  /* eggs */
  eggAcc+=dt;if(eggAcc>=40){eggAcc=0;const by={};for(const l of active)if(stageOf(l.xp)==='adult'&&l.happy>70)(by[l.sp]=by[l.sp]||[]).push(l);
-  for(const k in by){if(by[k].length>=2&&occupied()<S.cap&&!S.eggs.some(e=>e.sp===k)&&Math.random()<.3){const b=inner();S.eggs.push({sp:k,at:Date.now()+90000,x:rand(b.x0+40,b.x1-40)/TER.W,y:rand(b.y0+30,b.y1-30)/TER.H});
+  for(const k in by){if(SPECIES[k].kind==='mantis')continue;if(by[k].length>=2&&occupied()<S.cap&&!S.eggs.some(e=>e.sp===k)&&Math.random()<.3){const b=inner();S.eggs.push({sp:k,at:Date.now()+90000,x:rand(b.x0+40,b.x1-40)/TER.W,y:rand(b.y0+30,b.y1-30)/TER.H});
    toast(`ביצה חדשה של ${SPECIES[k].name} בחול!`,'good');once('egg','מה זה?! ביצה בחול! אם הטרריום חמים, בעוד דקה וחצי תבקע ממנה לטאה קטנטנה.');rosterKey='';break;}}}
  for(const e of [...S.eggs]){if(Date.now()>=e.at){S.eggs=S.eggs.filter(x=>x!==e);const id=S.uid++;const nm=freshName();S.lizards.push({id,sp:e.sp,name:nm,xp:0,food:60,happy:80,warm:70,missing:false});
   const r=ensureRT(lizById(id));r.x=e.x*TER.W;r.y=e.y*TER.H;S.xp+=40;snd('hatch');confetti(50);toast(`הביצה בקעה! ברוכים הבאים, ${nm}`,'good');selId=id;renderPanel();rosterKey='';}}
@@ -819,7 +877,7 @@ function tripClick(e){if(!trip||trip.paused)return;const cv=$('#tripCv');const p
 function floatT(x,y,text,col){trip.parts.push({x,y,vx:0,vy:-40,life:1.2,max:1.2,text,col});}
 function reveal(o){const x=o.fx*TRIP.W,y=o.fy*TRIP.H;
  if(o.c==='liz'){const sp=weighted(trip.loc.table);const s=SPECIES[sp];const len=s.len*1.2;const a=rand(0,6.28);
-  trip.crit.push({kind:'liz',sp,x,y,ang:a,len,st:sp==='cham'?'walk':'freeze',t:0,phase:0,freeze:rand(.55,.85),alpha:1,wob:rand(0,6)});
+  trip.crit.push({kind:'liz',sp,x,y,ang:a,len,st:sp==='cham'?'walk':'freeze',t:0,phase:0,freeze:s.kind==='mantis'?rand(1,1.3):rand(.55,.85),alpha:1,wob:rand(0,6)});
   if(sp==='cham')floatT(x,y-50,'משהו זז בין העלים...','#2E7746');}
  else if(o.c==='scorp'){trip.energy=Math.max(0,trip.energy-1);trip.crit.push({kind:'scorp',x,y,ang:rand(0,6.28),st:'walk',t:0});snd('ouch');floatT(x,y-40,'עקרב! \u2066-1\u2069','#C23E28');toast('עקרב! לביא קפץ אחורה ואיבד הרמה','bad');renderTripHud();}
  else if(o.c==='coin'){const n=Math.round(rand(4,11));S.coins+=n;snd('coin');floatT(x,y-30,`\u2066+${n}\u2069 מטבעות`,'#B9800B');}
@@ -835,9 +893,10 @@ function tripStep(dt){trip.t+=dt;if(trip.hintT>0)trip.hintT-=dt;
   if(c.st==='freeze'){if(c.t>c.freeze){c.st='run';c.t=0;}}
   else if(c.st==='run'){const v=sp.spd*(1+.15*Math.sin(c.t*3));c.ang+=Math.sin(c.t*5+c.wob)*1.4*dt;c.x+=Math.cos(c.ang)*v*dt;c.y+=Math.sin(c.ang)*v*dt;c.phase+=v*dt/c.len*5.5;
    if(sp.dives&&c.t>1.05){c.st='dive';c.t=0;}
+   if(sp.fly&&c.t>.75){c.st='dive';c.t=0;}
    if(c.x<-c.len||c.x>TRIP.W+c.len||c.y<-c.len||c.y>TRIP.H+c.len){c.st='gone';toast(`${sp.name} ${g(c.sp,'ברח','ברחה')}!`);}}
   else if(c.st==='walk'){c.x+=Math.cos(c.ang)*sp.spd*dt;c.y+=Math.sin(c.ang)*sp.spd*dt;c.phase+=sp.spd*dt/c.len*5.5;c.alpha=.62;if(c.t>5){c.st='dive';c.t=0;}}
-  else if(c.st==='dive'){c.alpha=Math.max(0,(c.alpha??1)-dt*1.8);c.phase+=dt*8;if(c.alpha<=0){c.st='gone';toast(sp.dives?`${sp.name} ${g(c.sp,'צלל','צללה')} לתוך החול!`:`${sp.name} ${g(c.sp,'נעלם','נעלמה')} בין העלים`);}}}
+  else if(c.st==='dive'){if(sp.fly){c.x+=Math.cos(c.ang)*sp.spd*4*dt;c.y+=Math.sin(c.ang)*sp.spd*4*dt;}c.alpha=Math.max(0,(c.alpha??1)-dt*1.8);c.phase+=dt*8;if(c.alpha<=0){c.st='gone';toast(sp.fly?`${sp.name} ${g(c.sp,'עף','עפה')} משם!`:sp.dives?`${sp.name} ${g(c.sp,'צלל','צללה')} לתוך החול!`:`${sp.name} ${g(c.sp,'נעלם','נעלמה')} בין העלים`);}}}
  trip.crit=trip.crit.filter(c=>c.st!=='gone');
  for(const p of trip.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}trip.parts=trip.parts.filter(p=>p.life>0);
  const busy=trip.crit.some(c=>c.kind==='liz')||trip.objs.some(o=>o.flipped&&!o.revealed);
@@ -970,7 +1029,7 @@ function drawTrip(dt){const cv=$('#tripCv');const d=fitTrip(cv);const key=d.W+'x
  if(trip.hintT>0)for(const o of trip.objs)if(!o.flipped&&o.c==='liz')drawTracks(x,o.fx*TRIP.W,o.fy*TRIP.H,o.seed);
  drawLaviTop(x,trip.lavi,trip.t);
  for(const c of trip.crit){if(c.kind==='scorp')drawScorp(x,c);else{const sp=SPECIES[c.sp];if(c.st==='caught'){const t=Math.min(1,c.t/.5);x.save();x.globalAlpha=1-t*.6;}
-  drawLizard(x,{sp:c.sp,x:c.x,y:c.y,ang:c.ang,len:c.len,phase:c.phase,amp:c.st==='run'||c.st==='walk'?.33:.05,walking:c.st==='run'||c.st==='walk',seed:7,alpha:c.alpha??1,col:c.sp==='cham'?mix(sp.col,trip.loc.g2,.25):undefined});
+  drawLizard(x,{sp:c.sp,display:c.st==='freeze'&&sp.kind==='mantis',x:c.x,y:c.y,ang:c.ang,len:c.len,phase:c.phase,amp:c.st==='run'||c.st==='walk'?.33:.05,walking:c.st==='run'||c.st==='walk',seed:7,alpha:c.alpha??1,col:c.sp==='cham'?mix(sp.col,trip.loc.g2,.25):undefined});
   if(c.st==='caught'){x.restore();const t=Math.min(1,c.t/.5);x.strokeStyle='#FFFFFF';x.lineWidth=5;x.beginPath();x.arc(c.x,c.y,c.len*.7*(1.3-t*.5),0,7);x.stroke();c.t+=dt;}
   if(c.st==='freeze'){x.font='700 34px Fredoka, Rubik, sans-serif';x.textAlign='center';x.fillStyle='#FFFFFF';x.strokeStyle='rgba(0,0,0,.5)';x.lineWidth=4;x.strokeText('!',c.x,c.y-c.len*.4);x.fillText('!',c.x,c.y-c.len*.4);}}}
  for(const o of trip.objs){const ox=o.fx*TRIP.W,oy=o.fy*TRIP.H;if(o.flipped){const t=Math.min(1,o.ft/.35);x.save();x.globalAlpha=1-t*.55;drawObj(x,o,ox+t*60*o.sz,oy-t*46*o.sz,o.sz*(1+t*.08));x.restore();}else drawObj(x,o,ox,oy,o.sz);}
@@ -987,7 +1046,7 @@ function catchModal(spk){const sp=SPECIES[spk];const isNew=!S.seen[spk];S.seen[s
   [{t:full?'הטרריום מלא':'לטרריום של לביא',cls:'primary',disabled:full,fn:()=>{const id=S.uid++;const adult=Math.random()<.3;const nm=freshName();S.lizards.push({id,sp:spk,name:nm,xp:adult?300:rand(100,180)|0,food:55,happy:60,warm:50,missing:false});selId=id;rosterKey='';toast(`${nm} ${g(spk,'הצטרף','הצטרפה')} לטרריום!`,'good');afterCatch(spk,isNew);}},
    {t:`לשחרר לטבע  ·  \u2066+${coins}\u2069 מטבעות, \u2066+${nat}\u2069 טבע`,fn:()=>{S.coins+=coins;S.nature+=nat;S.xp+=15;S.released++;bump('release');snd('coin');afterCatch(spk,isNew);}}]);
  $('#mcv').appendChild(cv);once('catch1','תפסנו! עכשיו מחליטים: להביא הביתה לטרריום, או לשחרר בחזרה לטבע ולקבל נקודות טבע ומטבעות.');}
-function afterCatch(spk,isNew){trip.paused=false;if(isNew){checkUnlocks();if(spk==='monitor')say('כוח אפור!!! הלטאה הכי גדולה בישראל! אף אחד בכיתה לא יאמין לי!');if(speciesCount()===ORDER.length)once('complete','השלמתי את כל המגדיר! אחד־עשר מינים! אני כבר כמעט הרפטולוג אמיתי – ככה קוראים לחוקרי זוחלים.');}renderTripHud();}
+function afterCatch(spk,isNew){trip.paused=false;if(isNew){checkUnlocks();if(SPECIES[spk].kind==='mantis'){once('mantis1','גמל שלמה! הוא בכלל לא לטאה, הוא חרק – אבל אני אוסף גם אותם. פתחתי לו פרק משלו במגדיר, והוא יכול לגור בטרריום ולאכול צרצרים.');if(MORDER.every(k=>S.seen[k]))once('mcomplete','מצאתי את כל ארבעת גמלי השלמה! סבתא אומרת שאני צריך מגדיר חרקים חדש.');}if(spk==='monitor')say('כוח אפור!!! הלטאה הכי גדולה בישראל! אף אחד בכיתה לא יאמין לי!');if(speciesCount()===ORDER.length)once('complete','השלמתי את כל המגדיר! אחד־עשר מינים! אני כבר כמעט הרפטולוג אמיתי – ככה קוראים לחוקרי זוחלים.');}renderTripHud();}
 function checkUnlocks(){const n=speciesCount();const lines={carmel:'אבא אמר שבשבת נוסעים לטייל בכרמל! שם יש חרדונים על הסלעים, לטאות ירוקות, ואולי... זיקית!',dunes:'יש! טיול לחולות ניצנה. שמעתי שיש שם לטאות ששוחות בתוך החול.',ramon:'טיול שנתי למכתש רמון! אומרים שחי שם הכוח האפור – הלטאה הכי גדולה בארץ.'};
  for(const l of LOCS)if(l.need&&n>=l.need&&!S.flags['un_'+l.id]){S.flags['un_'+l.id]=1;toast(`מקום חדש נפתח: ${l.name}`,'good');say(lines[l.id]);}}
 function endTrip(){if(!trip)return;const c=trip.caught;const t=trip;trip=null;$('#tripMap').hidden=false;$('#tripPlay').hidden=true;renderMaps();
@@ -1082,14 +1141,15 @@ function updateUI(){if(lastCoins>=0&&S.coins>lastCoins){const c=$('#coins').pare
 
 function renderMaps(){const box=$('#maps');box.innerHTML='';const n=speciesCount();
  for(const loc of LOCS){const locked=n<loc.need;const el=document.createElement('article');el.className='card loc'+(locked?' locked':'');
-  const here=ORDER.filter(k=>loc.table.some(t=>t[0]===k));
+  const here=ALL.filter(k=>loc.table.some(t=>t[0]===k));
   el.innerHTML=`<div class="art"><canvas width="600" height="192"></canvas></div><div class="in"><h3>${esc(loc.name)}</h3><p>${esc(loc.blurb)}</p><div class="who"></div>${locked?`<div class="lockmsg">נפתח אחרי שמגלים ${loc.need} מינים (יש ${n})</div>`:`<button class="btn primary">יוצאים למסע</button>`}</div>`;
   const cv=el.querySelector('canvas');const x=cv.getContext('2d');x.setTransform(.6,0,0,.6,0,0);paintGround(x,loc,1000,320,seeded(loc.id.length*97+5));
   const r=seeded(loc.id.length*13);for(let i=0;i<5;i++)drawObj(x,{type:pick(loc.objs),seed:i*7+1,rot:r()-.5},120+i*190+r()*40,90+r()*140,1.1);
   const who=el.querySelector('.who');for(const k of here){const c=document.createElement('canvas');c.width=116;c.height=56;c.title=S.seen[k]?SPECIES[k].name:'עוד לא התגלה';portrait(c,k,{silhouette:!S.seen[k],seed:5});who.appendChild(c);}
   el.querySelector('.btn')?.addEventListener('click',()=>startTrip(loc));box.appendChild(el);}}
-function renderGuide(){const box=$('#guide');box.innerHTML='';const n=speciesCount();$('#bookSum').textContent=`גילית ${n} מתוך ${ORDER.length} מינים · שוחררו לטבע: ${S.released}`;
- for(const k of ORDER){const sp=SPECIES[k],seen=!!S.seen[k];const el=document.createElement('article');el.className='card gcard'+(seen?'':' locked');
+function renderGuide(){const n=speciesCount();$('#bookSum').textContent=`גילית ${n} מתוך ${ORDER.length} מיני לטאות · שוחררו לטבע: ${S.released}`;
+ $('#bookSum2').textContent=`חרקים טורפים שמסתתרים בשיחים. גילית ${MORDER.filter(k=>S.seen[k]).length} מתוך ${MORDER.length}`;$('#guide').innerHTML='';$('#guide2').innerHTML='';
+ for(const k of ALL){const box=$(SPECIES[k].kind==='mantis'?'#guide2':'#guide');const sp=SPECIES[k],seen=!!S.seen[k];const el=document.createElement('article');el.className='card gcard'+(seen?'':' locked');
   el.innerHTML=`<canvas width="520" height="240"></canvas><h3>${seen?esc(sp.name):'???'}</h3>${seen?`<div class="latin">${sp.latin}</div>`:''}<div class="tags"><span class="tag">${esc(LOCBY[sp.loc].name)}</span>${seen?`<span class="tag r${sp.rar}">${RAR[sp.rar]}</span><span class="tag">${DIET[sp.diet]}</span>`:''}</div><p>${seen?esc(sp.fact):'עוד לא מצאנו אותה. מחפשים ב'+esc(LOCBY[sp.loc].name)+'.'}</p>${seen?`<span class="muted">נתפסו: ${S.seen[k]}</span>`:''}`;
   portrait(el.querySelector('canvas'),k,{silhouette:!seen,seed:4});box.appendChild(el);}}
 const SHOP=[
