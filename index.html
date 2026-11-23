@@ -275,6 +275,17 @@ canvas{display:block;width:100%;touch-action:manipulation;-webkit-tap-highlight-
 .tmission b{font-family:var(--font-display);font-weight:600}
 .tmission .rw{margin-inline-start:auto;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
 .tmission.done{background:var(--moss-soft);border-color:var(--moss)}
+.splash{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:#2E7746;overflow:hidden;transition:opacity .45s ease,transform .45s ease}
+.splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.splash canvas{position:absolute;inset:0;width:100%;height:100%}
+.sbox{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;color:#FFFFFF;padding:calc(24px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));max-width:560px}
+.sbox .avatar{width:112px;height:112px;box-shadow:0 0 0 6px rgba(255,255,255,.85),0 12px 30px rgba(0,0,0,.35)}
+.sbox h1{font-size:clamp(2.4rem,10vw,4.2rem);color:#FFFFFF;text-shadow:0 3px 0 #1C4A2A,0 10px 30px rgba(0,0,0,.4);margin-top:4px}
+.sbox p{margin:0;font-size:1.08rem;text-shadow:0 1px 8px rgba(0,0,0,.6);max-width:36ch}
+.startbtn{font-family:var(--font-display);font-weight:700;font-size:1.45rem;border:0;border-radius:999px;padding:15px 40px;background:#F2B526;color:#2D1D00;cursor:pointer;box-shadow:0 6px 0 #B9800B,0 14px 30px rgba(0,0,0,.35);animation:breathe 1.8s ease-in-out infinite;margin-top:6px}
+.startbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #B9800B,0 8px 20px rgba(0,0,0,.3)}
+.shint{font-size:.9rem!important;opacity:.95;background:rgba(0,0,0,.35);border-radius:12px;padding:8px 12px}
+@keyframes breathe{50%{transform:scale(1.05)}}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:80}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -381,6 +392,7 @@ canvas{display:block;width:100%;touch-action:manipulation;-webkit-tap-highlight-
 
 <div class="dialog" id="dialog" dir="rtl" lang="he" hidden><div class="dbox" role="dialog" aria-label="לביא אומר"><div class="avatar" data-lavi aria-hidden="true"></div><p><span class="who">לביא</span><span id="dlgText"></span></p><button class="btn primary" id="dlgNext">הבא</button></div></div>
 <div class="modal" id="modal" dir="rtl" lang="he" hidden><div class="mbox" role="dialog" aria-modal="true" id="mbox"></div></div>
+<div class="splash" id="splash" dir="rtl" lang="he"><canvas id="splashCv" aria-hidden="true"></canvas><div class="sbox"><div class="avatar" data-lavi aria-hidden="true"></div><h1>הלטאות של לביא</h1><p id="splashSub">לביא אוסף לטאות. בואו לעזור לו לגדל אותן ולמצוא עוד!</p><button class="startbtn" id="startBtn">יאללה, משחקים!</button><p class="shint" id="splashHint" hidden></p></div></div>
 <div class="toasts" id="toasts" dir="rtl" lang="he" aria-live="polite"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 
@@ -1415,7 +1427,7 @@ const IS_TOUCH=matchMedia('(pointer: coarse)').matches;
 const IS_IOS=/iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
 const CAN_FS=!!(document.documentElement.requestFullscreen&&document.fullscreenEnabled);
 function goFull(){if(!CAN_FS||document.fullscreenElement)return;document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>{});}
-if(CAN_FS&&IS_TOUCH&&!IS_STANDALONE()){const first=()=>{goFull();};document.addEventListener('pointerup',first,{once:true,capture:true});}
+
 let installEvt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;const b=$('#installBtn');if(b)b.hidden=false;});
 window.addEventListener('appinstalled',()=>{installEvt=null;const b=$('#installBtn');if(b)b.hidden=true;});
@@ -1424,10 +1436,24 @@ function setupScreenButtons(){const fb=$('#fsBtn');fb.hidden=!(CAN_FS&&!IS_STAND
  fb.onclick=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else goFull();};
  $('#installBtn').onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice;}catch(e){}installEvt=null;$('#installBtn').hidden=true;};
  if(IS_IOS&&!IS_STANDALONE()&&!S.flags.iosHome)setTimeout(()=>once('iosHome','טיפ: כדי לשחק במסך מלא באייפון, לחצו על כפתור השיתוף של ספארי (ריבוע עם חץ) ואז על "הוספה למסך הבית". המשחק ייפתח משם בלי שורת הכתובת. שימו לב: שם מתחילים התקדמות חדשה.'),1500);}
+let splashOn=false;
+function runSplash(isNew){const sp=$('#splash'),cv=$('#splashCv');splashOn=true;
+ const n=S.lizards.filter(l=>!l.missing).length;if(!isNew){$('#splashSub').textContent=n?`ממשיכים מאיפה שעצרנו. ${n===1?'לטאה אחת מחכה':n+' לטאות מחכות'} בטרריום.`:'ממשיכים מאיפה שעצרנו. הטרריום מחכה לדיירים חדשים.';$('#startBtn').textContent='ממשיכים לשחק';}
+ const ios=typeof IS_IOS!=='undefined'&&IS_IOS&&!IS_STANDALONE();if(ios){$('#splashHint').hidden=false;$('#splashHint').textContent='באייפון: כפתור השיתוף ← "הוספה למסך הבית" כדי לשחק במסך מלא';}
+ let bg=null,W=0,H=0,last=0;const crit=[['gecko',.3,55],['agama',.62,42],['green',.84,70],['mantis',.14,30]].map(([sp2,fy,v],i)=>({sp:sp2,fy,v,x:i*260-100,ph:i}));
+ const paint=()=>{const dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;bg=document.createElement('canvas');bg.width=cv.width;bg.height=cv.height;const x=bg.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);paintGround(x,LOCS[0],W,H,seeded(7));
+  const g=x.createRadialGradient(W/2,H/2,Math.min(W,H)*.15,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,'rgba(15,40,22,.55)');g.addColorStop(1,'rgba(10,25,14,.82)');x.fillStyle=g;x.fillRect(0,0,W,H);};
+ const loop=t=>{if(!splashOn)return;if(innerWidth!==W||innerHeight!==H)paint();const dt=Math.min(.05,(t-last)/1000||0);last=t;const x=cv.getContext('2d'),dpr=cv.width/W;x.setTransform(1,0,0,1,0,0);x.drawImage(bg,0,0);x.setTransform(dpr,0,0,dpr,0,0);
+  for(const c of crit){c.x+=c.v*dt;c.ph+=c.v*dt/22;if(c.x>W+160)c.x=-160;const L=SPECIES[c.sp].len*(W<640?.95:1.25);x.save();x.globalAlpha=.85;drawLizard(x,{sp:c.sp,x:c.x,y:H*c.fy+Math.sin(c.ph*.3)*10,ang:Math.sin(c.ph*.3)*.15,len:L,phase:c.ph,amp:.3,walking:true,seed:4});x.restore();}
+  requestAnimationFrame(loop);};
+ paint();requestAnimationFrame(loop);
+ $('#startBtn').onclick=()=>{if(typeof goFull==='function'&&typeof IS_TOUCH!=='undefined'&&IS_TOUCH&&!IS_STANDALONE())goFull();snd('hatch');sp.classList.add('out');setTimeout(()=>{sp.hidden=true;splashOn=false;},460);};
+ setTimeout(()=>$('#startBtn').focus(),100);}
 function start(data){S=(data&&data.S)||load()||newState();
- S.flags=S.flags||{};S.drops=S.drops||[];S.eggs=S.eggs||[];if(!S.missions){S.missions=[];for(let i=0;i<3;i++)S.missions.push(newMission());}selId=S.lizards.find(l=>!l.missing)?.id??null;
+ S.flags=S.flags||{};const wasNew=!S.flags.intro;S.drops=S.drops||[];S.eggs=S.eggs||[];if(!S.missions){S.missions=[];for(let i=0;i<3;i++)S.missions.push(newMission());}selId=S.lizards.find(l=>!l.missing)?.id??null;
  if(!(data&&data.S))offline();bind();renderPanel();updateUI();
  if(!S.flags.intro){S.flags.intro=1;say(['היי! אני לביא, ואני בן שמונה. יש לי תחביב אחד גדול: לטאות!','את פיצי, שממית הבתים הראשונה שלי, מצאתי על הקיר במרפסת. סבתא נתנה לי טרריום כדי שיהיה לה בית.','צריך לדאוג לה: להאכיל, לשמור על חום נעים עם המנורה, למלא מים ולנקות. לחצו על פיצי כדי לראות מה היא צריכה, ולחיצה נוספת עליה היא ליטוף.','וכשנהיה מוכנים – יוצאים למסע בחצר של סבתא לחפש עוד לטאות!']);}
+ if(data&&data.S)$('#splash').hidden=true;else runSplash(wasNew);
  checkUnlocks();setupScreenButtons();requestAnimationFrame(t=>{lastTs=t;requestAnimationFrame(frame);});}
 window.claude?.hot?.snapshot?.(()=>({S}));
 const hot=window.claude?.hot;hot?.ready?hot.ready(start):start(hot?.data??{});
