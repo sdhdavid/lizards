@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2E7746">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="הלטאות של לביא">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
 <meta name="description" content="משחק בעברית: לביא אוסף לטאות, מגדל אותן בטרריום ויוצא למסעות למצוא 11 מינים מישראל.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="הלטאות של לביא">
@@ -285,6 +293,8 @@ canvas{display:block;width:100%;touch-action:manipulation;-webkit-tap-highlight-
       <span class="chip" title="מטבעות"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#F2B526"/><circle cx="12" cy="12" r="7" fill="none" stroke="#B9800B" stroke-width="1.6"/><path d="M12 8v8M9.5 10.5h5" stroke="#B9800B" stroke-width="1.8" stroke-linecap="round"/></svg><b id="coins">0</b></span>
       <span class="chip" title="נקודות טבע – מקבלים על שחרור לטאות"><svg viewBox="0 0 24 24"><path d="M5 19C5 10 11 5 20 4c-1 9-6 15-15 15z" fill="#4FA35F"/><path d="M5 19c4-5 8-8 11-11" stroke="#1F5A2C" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><b id="nature">0</b></span>
       <span class="chip" title="מינים במגדיר"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2.5" fill="#2F7A6E"/><rect x="7" y="6" width="10" height="5" rx="1" fill="#CFEDE3"/><path d="M7 14h10M7 17h6" stroke="#CFEDE3" stroke-width="1.6" stroke-linecap="round"/></svg><b id="specCount">1/11</b><small>מינים</small></span>
+      <button class="iconbtn" id="installBtn" hidden aria-label="התקנת המשחק" title="התקנה למסך הבית"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+      <button class="iconbtn" id="fsBtn" hidden aria-label="מסך מלא" title="מסך מלא"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button class="iconbtn" id="muteBtn" aria-label="השתקת צלילים" title="צלילים"></button>
     </div>
   </header>
@@ -1399,11 +1409,26 @@ function bind(){document.querySelectorAll('[data-lavi]').forEach(e=>e.innerHTML=
  $('#dlgNext').onclick=()=>{snd('tap');nextLine();};
  document.addEventListener('visibilitychange',save);window.addEventListener('pagehide',save);}
 document.fonts&&document.fonts.ready.then(()=>{TER.key='';});
+/* full screen on phones: Android goes full screen on the first tap; iPhone is offered "Add to Home Screen" */
+const IS_STANDALONE=()=>matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
+const IS_TOUCH=matchMedia('(pointer: coarse)').matches;
+const IS_IOS=/iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+const CAN_FS=!!(document.documentElement.requestFullscreen&&document.fullscreenEnabled);
+function goFull(){if(!CAN_FS||document.fullscreenElement)return;document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>{});}
+if(CAN_FS&&IS_TOUCH&&!IS_STANDALONE()){const first=()=>{goFull();};document.addEventListener('pointerup',first,{once:true,capture:true});}
+let installEvt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;const b=$('#installBtn');if(b)b.hidden=false;});
+window.addEventListener('appinstalled',()=>{installEvt=null;const b=$('#installBtn');if(b)b.hidden=true;});
+if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+function setupScreenButtons(){const fb=$('#fsBtn');fb.hidden=!(CAN_FS&&!IS_STANDALONE());
+ fb.onclick=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else goFull();};
+ $('#installBtn').onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice;}catch(e){}installEvt=null;$('#installBtn').hidden=true;};
+ if(IS_IOS&&!IS_STANDALONE()&&!S.flags.iosHome)setTimeout(()=>once('iosHome','טיפ: כדי לשחק במסך מלא באייפון, לחצו על כפתור השיתוף של ספארי (ריבוע עם חץ) ואז על "הוספה למסך הבית". המשחק ייפתח משם בלי שורת הכתובת. שימו לב: שם מתחילים התקדמות חדשה.'),1500);}
 function start(data){S=(data&&data.S)||load()||newState();
  S.flags=S.flags||{};S.drops=S.drops||[];S.eggs=S.eggs||[];if(!S.missions){S.missions=[];for(let i=0;i<3;i++)S.missions.push(newMission());}selId=S.lizards.find(l=>!l.missing)?.id??null;
  if(!(data&&data.S))offline();bind();renderPanel();updateUI();
  if(!S.flags.intro){S.flags.intro=1;say(['היי! אני לביא, ואני בן שמונה. יש לי תחביב אחד גדול: לטאות!','את פיצי, שממית הבתים הראשונה שלי, מצאתי על הקיר במרפסת. סבתא נתנה לי טרריום כדי שיהיה לה בית.','צריך לדאוג לה: להאכיל, לשמור על חום נעים עם המנורה, למלא מים ולנקות. לחצו על פיצי כדי לראות מה היא צריכה, ולחיצה נוספת עליה היא ליטוף.','וכשנהיה מוכנים – יוצאים למסע בחצר של סבתא לחפש עוד לטאות!']);}
- checkUnlocks();requestAnimationFrame(t=>{lastTs=t;requestAnimationFrame(frame);});}
+ checkUnlocks();setupScreenButtons();requestAnimationFrame(t=>{lastTs=t;requestAnimationFrame(frame);});}
 window.claude?.hot?.snapshot?.(()=>({S}));
 const hot=window.claude?.hot;hot?.ready?hot.ready(start):start(hot?.data??{});
 </script>
